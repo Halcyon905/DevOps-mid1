@@ -1,69 +1,46 @@
-# 
-# GitHub Actions workflow.
 #
-# Automatically deploys the Node.js microservice to Kubernetes on push to the main branch.
-# For real use you might want to restrict this to the "prod" branch.
+# To deploy:
 #
-
-name: Deploy advertise
-
-on:
-  #
-  # Deploys the microservice on push to the specified subdirectory in the main branch of this code repository.
-  #
-  push: 
-    branches:
-      - main
-    paths:
-      - advertise/**
-
-  #
-  # Allows deployment to be invoked manually through the GitHub Actions user interface.
-  #
-  workflow_dispatch: 
-
-jobs:
-
-  deploy:
-    runs-on: ubuntu-latest
-    
-    env:
-      VERSION: ${{ github.sha }}
-      CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
-      REGISTRY_UN: ${{ secrets.REGISTRY_UN }}
-      REGISTRY_PW: ${{ secrets.REGISTRY_PW  }}
-      NAME: advertise
-      DIRECTORY: advertise
-
-    steps:
-      
-      # Checks-out your repository under $GITHUB_WORKSPACE.
-      - uses: actions/checkout@v3
-
-      #
-      # Builds the Docker image.
-      #
-      - name: Build
-        run: ./scripts/cd/build-image.sh
-
-      #
-      # Publishes the Docker image to the container registry.
-      #
-      - name: Publish
-        run: ./scripts/cd/push-image.sh
-
-      #
-      # Installs Kubectl and connects it to the cluster.
-      #
-      # https://github.com/marketplace/actions/kubernetes-cli-kubectl
-      #
-      - uses: tale/kubectl-action@v1
-        with:
-          base64-kube-config: ${{ secrets.KUBE_CONFIG }}
-          kubectl-version: v1.24.2
-      
-      #
-      # Expands the configuration template and deploys the microservice.
-      #
-      - name: Deploy
-        run: ./scripts/cd/deploy.sh
+# kubectl apply -f scripts/deploy.yaml
+#
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: advertise
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: advertise
+  template:
+    metadata:
+      labels:
+        app: advertise
+    spec:
+      containers: 
+      - name: advertise
+        image: $CONTAINER_REGISTRY/advertise:$VERSION
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PORT
+          value: "4000"
+        - name: DBHOST
+          value: mongodb://mongodb:27017
+        - name: DBNAME
+          value: history
+        - name: RABBIT
+          value: amqp://test:test@rabbit:5672
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: advertise
+spec:
+  selector:
+    app: advertise
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 4000
