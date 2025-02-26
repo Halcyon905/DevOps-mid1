@@ -70,6 +70,18 @@ async function main() {
     });
 
     //
+    // Web page to show the users some advertisements.
+    //
+    app.get("/advertise", async (req, res) => {
+
+        // Retreives the data from the history microservice.
+        // const historyResponse = await axios.get("http://history/history");
+
+        // Renders the history for display in the browser.
+        res.render("advertise");
+    });
+
+    //
     // HTTP GET route that streams video to the user's browser.
     //
     app.get("/api/video", async (req, res) => {
