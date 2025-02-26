@@ -5,7 +5,7 @@
 # For real use you might want to restrict this to the "prod" branch.
 #
 
-name: Deploy video-upload
+name: Deploy advertise
 
 on:
   #
@@ -15,7 +15,7 @@ on:
     branches:
       - main
     paths:
-      - video-upload/**
+      - advertise/**
 
   #
   # Allows deployment to be invoked manually through the GitHub Actions user interface.
@@ -32,8 +32,8 @@ jobs:
       CONTAINER_REGISTRY: ${{ secrets.CONTAINER_REGISTRY }}
       REGISTRY_UN: ${{ secrets.REGISTRY_UN }}
       REGISTRY_PW: ${{ secrets.REGISTRY_PW  }}
-      NAME: video-upload
-      DIRECTORY: video-upload
+      NAME: advertise
+      DIRECTORY: advertise
 
     steps:
       
